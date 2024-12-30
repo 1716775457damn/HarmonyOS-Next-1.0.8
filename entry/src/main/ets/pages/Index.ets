@@ -1,109 +1,45 @@
-//Swiper轮播组件基础
+// 定义轮播图数据的接口
+interface SwiperItem {
+  id: number,
+  backgroundColor: ResourceColor,
+  text: string,
+  message: string
+}
+
 @Entry
 @Component
 struct Index {
-  build() {
-    Column() {
-      Swiper() {
-        Text('首页轮播1')
-          .backgroundColor(Color.Red)
-        Text('首页轮播2')
-          .backgroundColor(Color.Blue)
-        Text('首页轮播3')
-          .backgroundColor(Color.Green)
-      }
-      .width('100%')
-      .height(200)
-    }
-  }
-}
-//自动播放和循环的Swiper轮播
-@Entry
-@Component
-struct Index {
-  build() {
-    Column() {
-      Swiper() {
-        Text('自动播放1')
-          .backgroundColor(Color.Red)
-        Text('自动播放2')
-          .backgroundColor(Color.Blue)
-        Text('自动播放3')
-          .backgroundColor(Color.Green)
-      }
-      .width('100%')
-      .height(200)
-      .loop(true) // 开启循环
-      .autoPlay(true) // 自动播放
-      .interval(3000) // 自动播放间隔3秒
-      .vertical(false) // 横向轮播
-    }
-  }
-}
+  @State swiperData: SwiperItem[] = [
+    { id: 1, backgroundColor: Color.Red, text: '轮播1', message: '点击了轮播1' },
+    { id: 2, backgroundColor: Color.Blue, text: '轮播2', message: '点击了轮播2' },
+    { id: 3, backgroundColor: Color.Green, text: '轮播3', message: '点击了轮播3' }
+  ]
 
-
-///////////////////////////////////////////////////////////////
-//定制指示器样式
-@Entry
-@Component
-struct Index {
-  build() {
-    Column() {
-      Swiper() {
-        Text('定制指示器1')
-          .backgroundColor(Color.Red)
-        Text('定制指示器2')
-          .backgroundColor(Color.Blue)
-        Text('定制指示器3')
-          .backgroundColor(Color.Green)
-      }
-      .width('100%')
-      .height(200)
-      .indicator(
-        Indicator.dot()
-          .itemWidth(15)
-          .itemHeight(15)
-          .color(Color.Gray)
-          .selectedItemWidth(20)
-          .selectedItemHeight(20)
-          .selectedColor(Color.White)
-      )
-    }
-  }
-}
-
-
-////////////////////////////////////////////
-//使用扩展函数简化Swiper轮播图的开发
-@Extend(Text)
-function textFn() {
-  .fontSize(20)
-  .fontWeight(FontWeight.Bold)
-}
-
-@Extend(Text)
-function bannerItem(bgColor: ResourceColor, msg: string) {
-  .textAlign(TextAlign.Center)
-  .backgroundColor(bgColor)
-  .fontColor(Color.White)
-  .fontSize(30)
-  .onClick(() => {
-    AlertDialog.show({
-      message: msg
-    })
-  })
-}
-
-@Entry
-@Component
-struct Extends_demo {
-  @State message: string = '@Extend-扩展组件(样式,事件)';
+  @State swiperIndex: number = 0
+  @State message: string = '@Extend-扩展组件(样式,事件)'
 
   build() {
     Column() {
+      // 标题
       Text(this.message)
         .textFn()
+      
+      // 基础轮播图
+      Swiper() {
+        ForEach(this.swiperData, (item: SwiperItem) => {
+          Text(item.text)
+            .bannerItem(item.backgroundColor, item.message)
+        }, (item: SwiperItem) => item.id.toString())
+      }
+      .width('100%')
+      .height(200)
+      .loop(true)
+      .autoPlay(true)
+      .interval(3000)
+      .vertical(false)
+      .indicator(true)
 
+      // 自定义样式轮播图
       Swiper() {
         Text('1')
           .bannerItem(Color.Orange, '轮播图1号')
@@ -114,9 +50,47 @@ struct Extends_demo {
       }
       .width('100%')
       .height(160)
+      .margin({ top: 20 })
     }
     .width('100%')
     .height('100%')
   }
+
+  @Builder private customIndicator(): void {
+    Row({ space: 10 }) {
+      ForEach(this.swiperData, (item: SwiperItem, index: number) => {
+        Circle({ width: 8, height: 8 })
+          .fill(this.swiperIndex === index ? Color.White : Color.Gray)
+      }, (item: SwiperItem): string => item.id.toString())
+    }
+    .position({ x: '40%', y: '90%' })
+  }
+}
+
+@Extend(Text) function textFn() {
+  .fontSize(20)
+  .fontWeight(FontWeight.Bold)
+}
+
+@Extend(Text) function bannerItem(bgColor: ResourceColor, msg: string) {
+  .width('100%')
+  .height('100%')
+  .textAlign(TextAlign.Center)
+  .backgroundColor(bgColor)
+  .fontColor(Color.White)
+  .fontSize(30)
+  .fontWeight(FontWeight.Bold)
+  .onClick(() => {
+    AlertDialog.show({
+      title: '提示',
+      message: msg,
+      confirm: {
+        value: '确定',
+        action: () => {
+          console.info(`点击了确定按钮: ${msg}`)
+        }
+      }
+    })
+  })
 }
 
